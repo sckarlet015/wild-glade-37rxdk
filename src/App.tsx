@@ -1,127 +1,172 @@
 import React, { useState } from 'react';
-import { Heart } from "lucide-react";
 
 const App = () => {
-  const [theme, setTheme] = useState('light');
-  const [mode, setMode] = useState('basic');
-  const [expression, setExpression] = useState('');
-  const [result, setResult] = useState('');
-  const [history, setHistory] = useState([]);
-  const [showHistory, setShowHistory] = useState(true);
+  const [state, setState] = useState({
+    theme: 'light',
+    mode: 'basic',
+    expression: '',
+    result: '',
+  });
 
-  const handleThemeChange = (e) => {
-    setTheme(e.target.value);
+  const [history, setHistory] = useState<{ expression: string; result: any }[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);  // Nuevo estado para controlar el modal
+
+  const handleStateChange = (key: string, value: string) => {
+    setState((prevState) => ({ ...prevState, [key]: value }));
   };
 
-  const handleModeChange = (e) => {
-    setMode(e.target.value);
-  };
-
-  const handleKeyPress = (key) => {
+  const handleKeyPress = (key: string) => {
     if (key === 'C') {
-      setExpression('');
-      setResult('');
+      setState({ ...state, expression: '', result: '' });
+    } else if (key === 'DE') {
+      setState({ ...state, expression: state.expression.slice(0, -1) });
     } else if (key === '=') {
       try {
-        const result = eval(expression);
-        setResult(result);
-        setHistory([...history, { expression, result }]);
+        const result = eval(state.expression);
+        setState({ ...state, result });
+        setHistory([...history, { expression: state.expression, result }]);
       } catch (error) {
-        setResult('Error');
+        setState({ ...state, result: 'Error' });
       }
     } else {
-      setExpression(expression + key);
+      setState({ ...state, expression: state.expression + key });
     }
   };
 
-  const handleScientificKeyPress = (key) => {
-    if (key === 'sin') {
-      setExpression(`Math.sin(${expression})`);
-    } else if (key === 'cos') {
-      setExpression(`Math.cos(${expression})`);
-    } else if (key === 'tan') {
-      setExpression(`Math.tan(${expression})`);
-    } else if (key === 'log') {
-      setExpression(`Math.log(${expression})`);
-    } else if (key === 'sqrt') {
-      setExpression(`Math.sqrt(${expression})`);
-    } else if (key === 'pow') {
-      setExpression(`Math.pow(${expression}, 2)`);
-    } else if (key === 'exp') {
-      setExpression(`Math.exp(${expression})`);
-    } else if (key === 'abs') {
-      setExpression(`Math.abs(${expression})`);
-    } else if (key === 'ceil') {
-      setExpression(`Math.ceil(${expression})`);
-    } else if (key === 'floor') {
-      setExpression(`Math.floor(${expression})`);
-    } else if (key === 'round') {
-      setExpression(`Math.round(${expression})`);
+  const handleDeleteLast = () => {
+    setState({ ...state, expression: state.expression.slice(0, -1) }); // Eliminar el último número
+  };
+
+  const handleScientificKeyPress = (key: string) => {
+    const scientificFunctions: Record<string, string> = {
+      sin: 'Math.sin',
+      cos: 'Math.cos',
+      tan: 'Math.tan',
+      log: 'Math.log',
+      sqrt: 'Math.sqrt',
+      pow: 'Math.pow',
+      exp: 'Math.exp',
+      abs: 'Math.abs',
+      ceil: 'Math.ceil',
+      floor: 'Math.floor',
+      round: 'Math.round',
+      pi: 'Math.PI',
+      e: 'Math.E',
+    };
+
+    if (scientificFunctions[key]) {
+      setState({
+        ...state,
+        expression: `${scientificFunctions[key]}(${state.expression})`,
+      });
+    } else {
+      setState({ ...state, expression: state.expression + key });
     }
   };
 
-  const handleToggleHistory = () => {
-    setShowHistory(!showHistory);
+  const toggleHistory = () => setIsModalOpen(!isModalOpen);  // Cambiar para abrir/cerrar el modal
+
+  const renderBasicButtons = () => {
+    const basicButtons = [
+      ['C', 'DE', '(', ')', '/'],
+      ['7', '8', '9', '*'],
+      ['4', '5', '6', '-'],
+      ['1', '2', '3', '+'],
+      ['0', '.', '=', '%'],
+    ];
+
+    return basicButtons.map((row, rowIndex) => (
+      <div key={rowIndex} className="button-row">
+        {row.map((button) => (
+          <button
+            key={button}
+            onClick={() => handleKeyPress(button)}
+            className={`button ${button === 'C' ? 'btn-clear' : button === '=' ? 'btn-equal' : 'btn-default'}`}
+          >
+            {button}
+          </button>
+        ))}
+      </div>
+    ));
+  };
+
+  const renderScientificButtons = () => {
+    const scientificButtons = [
+      ['sin', 'cos', 'tan', 'log'],
+      ['sqrt', 'pow', 'exp', 'abs'],
+      ['ceil', 'floor', 'round', 'pi'],
+      ['e', '!', '%', 'mod'],
+    ];
+
+    return scientificButtons.map((row, rowIndex) => (
+      <div key={rowIndex} className="button-row">
+        {row.map((button) => (
+          <button
+            key={button}
+            onClick={() => handleScientificKeyPress(button)}
+            className="button btn-scientific"
+          >
+            {button}
+          </button>
+        ))}
+      </div>
+    ));
   };
 
   return (
-    <div className={`flex flex-col items-center justify-center h-screen ${theme === 'light' ? 'bg-gray-100' : 'bg-gray-900'}`}>
-      <div className="w-full p-4 text-2xl border-b border-gray-400">
-        <p>Expression: {expression}</p>
-        <p>Result: {result}</p>
+    <div className={`calculator-container ${state.theme === 'light' ? 'light-theme' : 'dark-theme'}`}>
+      <div className="display-container">
+        <p className="expression">{state.expression}</p>
+        <p className="result">{state.result}</p>
       </div>
-      <div className="flex flex-row justify-between w-full p-4">
-        <select value={theme} onChange={handleThemeChange} className="mr-4">
+
+      <div className="theme-mode-container">
+        <select
+          value={state.theme}
+          onChange={(e) => handleStateChange('theme', e.target.value)}
+          className="theme-selector"
+        >
           <option value="light">Light</option>
           <option value="dark">Dark</option>
         </select>
-        <select value={mode} onChange={handleModeChange}>
+        <select
+          value={state.mode}
+          onChange={(e) => handleStateChange('mode', e.target.value)}
+          className="mode-selector"
+        >
           <option value="basic">Basic</option>
           <option value="scientific">Scientific</option>
         </select>
       </div>
-      <div className="flex flex-row flex-wrap justify-center w-full p-4">
-        {mode === 'basic' ? (
-          <>
-            <button onClick={() => handleKeyPress('7')} className="m-2 p-4 text-2xl border border-gray-400 rounded w-1/4">7</button>
-            <button onClick={() => handleKeyPress('8')} className="m-2 p-4 text-2xl border border-gray-400 rounded w-1/4">8</button>
-            <button onClick={() => handleKeyPress('9')} className="m-2 p-4 text-2xl border border-gray-400 rounded w-1/4">9</button>
-            <button onClick={() => handleKeyPress('/')} className="m-2 p-4 text-2xl border border-gray-400 rounded w-1/4">/</button>
-            <button onClick={() => handleKeyPress('4')} className="m-2 p-4 text-2xl border border-gray-400 rounded w-1/4">4</button>
-            <button onClick={() => handleKeyPress('5')} className="m-2 p-4 text-2xl border border-gray-400 rounded w-1/4">5</button>
-            <button onClick={() => handleKeyPress('6')} className="m-2 p-4 text-2xl border border-gray-400 rounded w-1/4">6</button>
-            <button onClick={() => handleKeyPress('*')} className="m-2 p-4 text-2xl border border-gray-400 rounded w-1/4">*</button>
-            <button onClick={() => handleKeyPress('1')} className="m-2 p-4 text-2xl border border-gray-400 rounded w-1/4">1</button>
-            <button onClick={() => handleKeyPress('2')} className="m-2 p-4 text-2xl border border-gray-400 rounded w-1/4">2</button>
-            <button onClick={() => handleKeyPress('3')} className="m-2 p-4 text-2xl border border-gray-400 rounded w-1/4">3</button>
-            <button onClick={() => handleKeyPress('-')} className="m-2 p-4 text-2xl border border-gray-400 rounded w-1/4">-</button>
-            <button onClick={() => handleKeyPress('0')} className="m-2 p-4 text-2xl border border-gray-400 rounded w-1/4">0</button>
-            <button onClick={() => handleKeyPress('+')} className="m-2 p-4 text-2xl border border-gray-400 rounded w-1/4">+</button>
-            <button onClick={() => handleKeyPress('=')} className="m-2 p-4 text-2xl border border-gray-400 rounded w-1/2">=</button>
-          </>
-        ) : (
-          <>
-            <button onClick={() => handleScientificKeyPress('sin')} className="m-2 p-4 text-2xl border border-gray-400 rounded w-1/4">sin</button>
-            <button onClick={() => handleScientificKeyPress('cos')} className="m-2 p-4 text-2xl border border-gray-400 rounded w-1/4">cos</button>
-            <button onClick={() => handleScientificKeyPress('tan')} className="m-2 p-4 text-2xl border border-gray-400 rounded w-1/4">tan</button>
-            <button onClick={() => handleScientificKeyPress('log')} className="m-2 p-4 text-2xl border border-gray-400 rounded w-1/4">log</button>
-            <button onClick={() => handleScientificKeyPress('sqrt')} className="m-2 p-4 text-2xl border border-gray-400 rounded w-1/4">sqrt</button>
-            <button onClick={() => handleScientificKeyPress('pow')} className="m-2 p-4 text-2xl border border-gray-400 rounded w-1/4">x^2</button>
-            <button onClick={() => handleScientificKeyPress('exp')} className="m-2 p-4 text-2xl border border-gray-400 rounded w-1/4">exp</button>
-            <button onClick={() => handleScientificKeyPress('abs')} className="m-2 p-4 text-2xl border border-gray-400 rounded w-1/4">abs</button>
-            <button onClick={() => handleScientificKeyPress('ceil')} className="m-2 p-4 text-2xl border border-gray-400 rounded w-1/4">ceil</button>
-            <button onClick={() => handleScientificKeyPress('floor')} className="m-2 p-4 text-2xl border border-gray-400 rounded w-1/4">floor</button>
-            <button onClick={() => handleScientificKeyPress('round')} className="m-2 p-4 text-2xl border border-gray-400 rounded w-1/4">round</button>
-          </>
+
+      <div className="buttons-container">
+        {renderBasicButtons()}
+        {state.mode === 'scientific' && (
+          <div className="scientific-buttons">{renderScientificButtons()}</div>
         )}
       </div>
-      <button onClick={handleToggleHistory} className="mb-4 p-4 text-2xl border border-gray-400 rounded">{showHistory ? 'Hide History' : 'Show History'}</button>
-      {showHistory && (
-        <ul>
-          {history.map((item, index) => (
-            <li key={index}>{item.expression} = {item.result}</li>
-          ))}
-        </ul>
+
+      <button onClick={toggleHistory} className="history-toggle-btn">
+        {isModalOpen ? 'Hide History' : 'Show History'}
+      </button>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="modal-overlay" onClick={toggleHistory}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close-btn" onClick={toggleHistory}>X</button>
+            <h2>History</h2>
+            <div className="history-container">
+              {history.map((item, index) => (
+                <div key={index} className="history-item">
+                  <p>
+                    {item.expression} = {item.result}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

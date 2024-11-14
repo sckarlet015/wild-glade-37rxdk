@@ -1,15 +1,259 @@
+/* Estilos generales */
 body {
-  font-family: sans-serif;
-  -webkit-font-smoothing: auto;
-  -moz-font-smoothing: auto;
-  -moz-osx-font-smoothing: grayscale;
-  font-smoothing: auto;
-  text-rendering: optimizeLegibility;
-  font-smooth: always;
-  -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f5f5f5;
 }
 
-h1 {
-  font-size: 1.5rem;
+.calculator-container {
+  width: 100%;
+  max-width: 500px; /* Limita el ancho máximo para computadoras */
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.light-theme {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.dark-theme {
+  background-color: #333;
+  color: #fff;
+}
+
+.display-container {
+  text-align: right;
+  margin-bottom: 20px;
+}
+
+.expression,
+.result {
+  font-size: 24px;
+  margin: 10px 0;
+}
+
+.theme-mode-container {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.theme-selector,
+.mode-selector {
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.buttons-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.button-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.button {
+  width: 60px;
+  height: 60px;
+  font-size: 18px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  background-color: #fff;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+}
+
+.button:hover {
+  background-color: #f0f0f0;
+}
+
+.btn-clear {
+  background-color: #ff4d4d;
+  color: white;
+}
+
+.btn-equal {
+  background-color: #4caf50;
+  color: white;
+}
+
+.btn-scientific {
+  background-color: #e1e1e1;
+  color: #333;
+}
+
+.history-toggle-btn {
+  margin-top: 20px;
+  background-color: #007bff;
+  color: white;
+  padding: 10px;
+  width: 100%;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.history-toggle-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 400px;
+  overflow-y: auto;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.history-container {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.history-item {
+  padding: 10px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Estilos responsivos para pantallas pequeñas */
+@media (max-width: 600px) {
+  .calculator-container {
+    padding: 10px; /* Menos espacio */
+    max-width: 380px; /* Ajuste de tamaño */
+  }
+
+  .expression,
+  .result {
+    font-size: 18px; /* Reduce el tamaño para ajustarse mejor */
+  }
+
+  .button {
+    width: 45px;
+    height: 45px;
+    font-size: 16px;
+  }
+
+  .button-row {
+    flex-wrap: wrap;
+    justify-content: space-around;
+  }
+
+  .theme-mode-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .history-toggle-btn {
+    font-size: 14px;
+    padding: 8px; /* Reducir padding para mayor compatibilidad */
+  }
+
+  .modal-content {
+    width: 100%;
+    max-width: none;
+  }
+
+  /* Mejorar el espaciado de los botones y la distribución en pantallas pequeñas */
+  .button {
+    width: 50px;
+    height: 50px;
+    font-size: 16px;
+    margin: 5px; /* Asegura que los botones no se toquen */
+  }
+
+  .button-row {
+    justify-content: space-evenly;
+  }
+
+  /* Asegurarse de que los elementos se ajusten bien */
+  .buttons-container {
+    padding: 5px;
+  }
+
+  .history-container {
+    max-height: 250px; /* Reducir el tamaño del historial */
+  }
+}
+
+/* Estilos adicionales para dispositivos con un ancho aún más pequeño, como los de 400px */
+@media (max-width: 400px) {
+  .calculator-container {
+    padding: 10px; /* Ajustar el padding para pantallas más pequeñas */
+  }
+
+  .expression,
+  .result {
+    font-size: 16px; /* Hacer que los textos sean más pequeños para caber mejor */
+  }
+
+  .button {
+    width: 45px;
+    height: 45px;
+    font-size: 14px; /* Reducir el tamaño de fuente de los botones */
+  }
+
+  .history-toggle-btn {
+    font-size: 12px;
+    padding: 6px 10px; /* Ajustar el tamaño del botón de historial */
+  }
+
+  .history-container {
+    max-height: 200px; /* Reducir la altura del historial */
+  }
+
+  .theme-mode-container {
+    flex-direction: column;
+    align-items: stretch; /* Asegura que los controles se alineen bien */
+  }
+
+  .modal-content {
+    max-width: 100%; /* Asegura que el modal se ajuste correctamente */
+    padding: 15px;
+  }
+
+  /* Ajustes para la interfaz en dispositivos más pequeños */
+  .modal-close-btn {
+    top: 5px;
+    right: 5px;
+    padding: 3px 8px; /* Ajuste del tamaño del botón de cerrar */
+  }
 }

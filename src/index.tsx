@@ -1,12 +1,17 @@
-import React, { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import "./styles.css";
+import React from "react";
+import { createRoot } from "react-dom/client"; // Asegúrate de usar 'react-dom/client'
+import App from "./App"; // Tu componente principal
+import './styles.css'; // Estilos
 
-import App from "./App";
+const rootElement = document.getElementById("root");
 
-const root = createRoot(document.getElementById("root"));
-root.render(
-  <StrictMode>
-    <App />
-  </StrictMode>
-);
+if (rootElement) {
+  const root = createRoot(rootElement); // Usando createRoot
+  root.render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+} else {
+  console.error("No se encontró el elemento con id 'root'.");
+}
